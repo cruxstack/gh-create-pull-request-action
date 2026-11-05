@@ -1,0 +1,51 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Verify
+        run: |
+          npm ci --ignore-scripts
+          npm run typecheck
+          npm test
+          test -z "$(git status --porcelain -- dist)"
+
+      - name: Create Tag
+        id: tag
+        uses: cruxstack/gh-create-semver-tag-action@81a68a34ab1fb48f4568ddd10e76caf9a608108e # v1.0.0
+        with:
+          bump-default: none
+
+      - name: Create Release
+        if: steps.tag.outputs.tag != ''
+        uses: cruxstack/gh-create-release-action@3a56a12ce0c6e8083dc90eb7f77805d72423b3fe # v1.0.0
+        with:
+          release-tag: ${{ steps.tag.outputs.tag }}
+          release-body: ${{ steps.tag.outputs.changelog }}
+          release-if-exists: skip

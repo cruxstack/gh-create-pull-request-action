@@ -1,0 +1,66 @@
+name: Create Pull Request
+description: Commit local changes through the GitHub API and open or update a pull request.
+author: CruxStack
+branding:
+  icon: git-pull-request
+  color: blue
+
+inputs:
+  github-token:
+    description: Token with `contents:write` and `pull-requests:write`. Use an App token so the pull request triggers workflows.
+    default: ${{ github.token }}
+  github-repository:
+    description: Repository to update, as `owner/name`.
+    default: ${{ github.repository }}
+  working-directory:
+    description: Directory inside the checked-out repository.
+    default: .
+  commit-message:
+    description: Commit message.
+    default: "chore: automated update"
+  commit-paths:
+    description: Git pathspecs to include, one per line, relative to `working-directory`. Defaults to every change.
+  commit-author:
+    description: Commit author as `Name <email>`. Defaults to the token's identity.
+  pr-head-branch:
+    description: Branch that holds the changes. It is force-updated.
+    required: true
+  pr-base-branch:
+    description: Branch to merge into. Defaults to the repository's default branch.
+  pr-title:
+    description: Pull request title.
+    required: true
+  pr-body:
+    description: Pull request body.
+  pr-body-file:
+    description: File containing the pull request body.
+  pr-labels:
+    description: Labels to add, one per line or comma-separated.
+  pr-assignees:
+    description: Users to assign, one per line or comma-separated.
+  pr-reviewers:
+    description: Users to request reviews from, one per line or comma-separated.
+  pr-team-reviewers:
+    description: Team slugs to request reviews from, one per line or comma-separated.
+  pr-draft:
+    description: Open new pull requests as drafts.
+    default: "false"
+  pr-close-if-empty:
+    description: Close the pull request and delete its branch when no changes remain.
+    default: "true"
+
+outputs:
+  pr-number:
+    description: Pull request number.
+  pr-url:
+    description: Pull request URL.
+  pr-operation:
+    description: created, updated, unchanged, closed or skipped.
+  pr-head-sha:
+    description: Commit at the head of the pull request branch.
+  pr-head-branch:
+    description: Pull request branch.
+
+runs:
+  using: node24
+  main: dist/main.js
